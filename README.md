@@ -14,4 +14,4 @@ Bomb Glove ammo is automatically converted and added to your bolt balance at ven
 Either download the latest `Ratchad.exe` from the **Releases** tab, or build it yourself using:
 
 ```bash
-gcc -m64 main.c -o Ratchad.exe -lws2_32
+gcc -m64 main.c ratchad_res.o -o Ratchad.exe -lws2_32
