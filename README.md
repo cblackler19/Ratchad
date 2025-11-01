@@ -3,7 +3,7 @@
 A utility program intended to be used on **wrench-only runs** of *Ratchet & Clank* (2002).  
 Bomb Glove ammo is automatically converted and added to your bolt balance at vendor prices (**5 bolts each**).
 
-[![Ratchad Demo](https://img.youtube.com/vi/DhFUby_-EJI/0.jpg)](https://youtu.be/DhFUby_-EJI)
+https://github.com/user-attachments/assets/83125ef0-3b05-4882-97bf-3be6154477c5
 
 ## Requirements
 
