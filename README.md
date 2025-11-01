@@ -15,3 +15,5 @@ Either download the latest `Ratchad.exe` from the **Releases** tab, or build it 
 
 ```bash
 gcc -m64 main.c ratchad_res.o -o Ratchad.exe -lws2_32
+```
+If you don't have `gcc` you can get pre-built binaries [`here`](https://winlibs.com/).
