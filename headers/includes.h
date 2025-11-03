@@ -8,4 +8,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <ctype.h>
+
 #include "tos.h"
+#include "find_pids.h"
