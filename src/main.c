@@ -1,8 +1,8 @@
 #undef UNICODE
 #undef _UNICODE
 
-#include "includes.h"
-#include "defines.h"
+#include "../headers/includes.h"
+#include "../headers/defines.h"
 
 uint32_t bolts_gained = 0;
 DWORD rpcs3_pid = 0;
@@ -38,9 +38,19 @@ int find_pids(const char* target_name) {
 int main(void) {
     printf("Ratchad, made by Caleb Blackler\n\n"); // TODO: add a cool intro sequence instead of this basic shit
 
+    if (tos() == 1) {
+        printf("You can't use this program without accepting the terms.\n");
+        for (int i = 5; i > 0; i--) {
+            printf("Exiting in %u seconds...\r", i);
+            fflush(stdout);
+            Sleep(1000);
+        }
+        return 1;
+    }
+
     if (!find_pids(TARGET)) {
         fprintf(stderr, "%sCould not find rpcs3.exe. Make sure it's running. (err %lu)%s\n", RED, GetLastError(), DEF);
-        system("PAUSE"); // without the console will close instantly and end-user won't know what error was
+        system("PAUSE"); // without this the console will close instantly and end-user won't know what error was
         return 1;
     }
 
