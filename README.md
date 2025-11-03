@@ -20,7 +20,7 @@ Either download the latest `Ratchad.exe` from the **Releases** tab, or build it 
 ```bash
 git clone https://github.com/cblackler19/Ratchad.git
 cd Ratchad
-gcc -m64 ./src/main.c ./src/tos.c ./src/find_pids.c ./src/ratchad_res.o -o Ratchad.exe -lws2_32
+gcc -m64 ./src/main.c ./src/tos.c ./src/find_pids.c ./src/mem.c ./src/ratchad_res.o -o Ratchad.exe -lws2_32
 ```
 or:
 ```bash
