@@ -5,35 +5,6 @@
 #include "../headers/defines.h"
 
 uint32_t bolts_gained = 0;
-DWORD rpcs3_pid = 0;
-
-int find_pids(const char* target_name) {
-    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-    if (snap == INVALID_HANDLE_VALUE) {
-        fprintf(stderr, "%sCreateToolhelp32Snapshot failed (err %lu)%s\n", RED, GetLastError(), DEF);
-        return 1;
-    }
-
-    PROCESSENTRY32 pe;
-    pe.dwSize = sizeof(pe);
-
-    if (!Process32First(snap, &pe)) {
-        fprintf(stderr, "%sProcess32First failed (err %lu)%s\n", RED, GetLastError(), DEF);
-        CloseHandle(snap);
-        return 1;
-    }
-    int found = 0;
-    do {
-        if (_stricmp(pe.szExeFile, target_name) == 0) {
-            printf("%sFound: %s PID: %lu%s\n", GREEN, pe.szExeFile, (unsigned long)pe.th32ProcessID, DEF);
-            rpcs3_pid = pe.th32ProcessID;
-            found++;
-            break;
-        }
-    } while (Process32Next(snap, &pe));
-    CloseHandle(snap);
-    return found > 0;
-}
 
 int main(void) {
     printf("Ratchad, made by Caleb Blackler\n\n"); // TODO: add a cool intro sequence instead of this basic shit
@@ -48,22 +19,25 @@ int main(void) {
         return 1;
     }
 
-    if (!find_pids(TARGET)) {
-        fprintf(stderr, "%sCould not find rpcs3.exe. Make sure it's running. (err %lu)%s\n", RED, GetLastError(), DEF);
-        system("PAUSE"); // without this the console will close instantly and end-user won't know what error was
+    int pid = find_pids(TARGET);
+    
+    if (pid == -1) {
+        for (int i = 5; i > 0; i--) {
+            printf("Exiting in %u seconds...\r", i);
+            fflush(stdout);
+            Sleep(1000);
+        }
         return 1;
     }
 
-    printf("%sAttempting to attach Ratchad to PID %lu...%s\n", YELLOW, (unsigned long)rpcs3_pid, DEF);
-
-    HANDLE hProcess = OpenProcess(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION | PROCESS_QUERY_INFORMATION, FALSE, rpcs3_pid);
+    HANDLE hProcess = OpenProcess(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION | PROCESS_QUERY_INFORMATION, FALSE, pid);
     if (!hProcess) {
         fprintf(stderr, "%sRatchad failed to attach! (err %lu)%s\n", RED, GetLastError(), DEF);
         return 1;
     }
 
     printf("%sRatchad successfully attached PID %lu!%s\n\n%sLive bolt data updating at 60fps. Press Ctrl+C to exit\n",
-        GREEN, (unsigned long)rpcs3_pid, DEF, CLR_CONS);
+        GREEN, (unsigned long)pid, DEF, CLR_CONS);
 
     while (1) {
         uint32_t raw_bolts = 0, raw_bomb = 0;
