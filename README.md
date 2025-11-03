@@ -18,7 +18,7 @@ https://github.com/user-attachments/assets/e389c881-c33e-4711-9421-e498b75b4a66
 Either download the latest `Ratchad.exe` from the **Releases** tab, or build it yourself using:
 
 ```bash
-gcc -m64 ./src/main.c ./src/tos.c ./src/ratchad_res.o -o Ratchad.exe -lws2_32
+gcc -m64 ./src/main.c ./src/tos.c ./src/find_pids.c ./src/ratchad_res.o -o Ratchad.exe -lws2_32
 ```
 or:
 ```bash
