@@ -39,7 +39,7 @@ int find_pids(const char* target_name) {
     HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     if (snap == INVALID_HANDLE_VALUE) {
         fprintf(stderr, "%sCreateToolhelp32Snapshot failed (err %lu)%s\n", ansi.red, GetLastError(), ansi.def);
-        return 0;
+        return 1;
     }
 
     PROCESSENTRY32 pe;
@@ -48,9 +48,8 @@ int find_pids(const char* target_name) {
     if (!Process32First(snap, &pe)) {
         fprintf(stderr, "%sProcess32First failed (err %lu)%s\n", ansi.red, GetLastError(), ansi.def);
         CloseHandle(snap);
-        return 0;
+        return 1;
     }
-
     int found = 0;
     do {
         if (_stricmp(pe.szExeFile, target_name) == 0) {
@@ -60,18 +59,16 @@ int find_pids(const char* target_name) {
             break;
         }
     } while (Process32Next(snap, &pe));
-
     CloseHandle(snap);
-
     return found > 0;
 }
 
 int main(void) {
-    printf("Ratchad, made by Caleb Blackler\n\n");
+    printf("Ratchad, made by Caleb Blackler\n\n"); // TODO: add a cool intro sequence instead of this basic shit
 
     if (!find_pids(target)) {
         fprintf(stderr, "%sCould not find rpcs3.exe. Make sure it's running. (err %lu)%s\n", ansi.red, GetLastError(), ansi.def);
-        system("PAUSE");
+        system("PAUSE"); // without the console will close instantly and end-user won't know what error was
         return 1;
     }
 
@@ -83,9 +80,8 @@ int main(void) {
         return 1;
     }
 
-    printf("%sRatchad successfully attached PID %lu!%s\n\n", ansi.green, (unsigned long)rpcs3_pid, ansi.def);
-    printf(ansi.clear);
-    printf("Live bolt data (200ms). Press Ctrl+C to exit.\n");
+    printf("%sRatchad successfully attached PID %lu!%s\n\n%sLive bolt data updating at 60fps. Press Ctrl+C to exit\n",
+        ansi.green, (unsigned long)rpcs3_pid, ansi.def, ansi.clear);
 
     while (1) {
         uint32_t raw_bolts = 0, raw_bomb = 0;
@@ -105,7 +101,7 @@ int main(void) {
             continue;
         }
 
-        uint32_t bolts_le = ntohl(raw_bolts); // convert bolts to little-endiaan
+        uint32_t bolts_le = ntohl(raw_bolts); // convert raw bolt value from big-endian to little-endian
         uint32_t ammo = raw_bomb;
 
         // convert ammo to bolts
@@ -113,7 +109,7 @@ int main(void) {
             uint32_t add = ammo * 5;
             bolts_le += add;
 
-            // write updated bolts
+            // convert bolts back to big-endian and write to memory
             uint32_t new_be_bolts = htonl(bolts_le);
             SIZE_T bytesWritten = 0;
             WriteProcessMemory(hProcess, (LPVOID)BOLTS_ADDR, &new_be_bolts, sizeof(new_be_bolts), &bytesWritten);
@@ -122,19 +118,19 @@ int main(void) {
             uint32_t zero = 0;
             WriteProcessMemory(hProcess, (LPVOID)BOMB_GLOVE_ADDR, &zero, sizeof(zero), &bytesWritten);
 
-            bolts_gained = bolts_gained += ammo * 5;
+            bolts_gained = bolts_gained += ammo * 5; // TODO: Add .txt file that tracks converted ammo over multiple Ratchad restarts
             ammo = 0;
         }
 
+        // print live data every frame and move cursor back to start to avoid console spam
         printf("Raw Bolts: %s%08X%s | Actual: %s%u%s | Bolts Gained from Ammo: %s%u%s\r",
             ansi.cyan, raw_bolts, ansi.def,
             ansi.green, bolts_le, ansi.def,
             ansi.yellow, bolts_gained, ansi.def);
 
         fflush(stdout);
-        Sleep(200);
+        Sleep(17); // update at ~60 fps (1000ms / 60 = 16.77ms)
     }
     CloseHandle(hProcess);
-    system("PAUSE");
     return 0;
 }
