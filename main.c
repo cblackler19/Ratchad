@@ -14,12 +14,21 @@
 #define BOLTS_ADDR      ((uintptr_t)0x300969CA0ULL)
 #define BOMB_GLOVE_ADDR ((uintptr_t)0x30096C0D7ULL)
 
-const char* cyan_c      = "\033[0;36m";
-const char* green_c     = "\033[0;32m";
-const char* red_c       = "\033[0;31m";
-const char* yellow_c    = "\033[0;33m";
-const char* default_c   = "\033[0m";
-const char* clr_console = "\e[1;1H\e[2J";
+struct {
+    const char* cyan;
+    const char* green;
+    const char* red;
+    const char* yellow;
+    const char* def;
+    const char* clear;
+} ansi = {
+    .cyan   = "\033[0;36m",
+    .green  = "\033[0;32m",
+    .red    = "\033[0;31m",
+    .yellow = "\033[0;33m",
+    .def    = "\033[0m",
+    .clear  = "\e[1;1H\e[2J"
+};
 
 uint32_t bolts_gained = 0;
 
@@ -29,7 +38,7 @@ const char* target = "rpcs3.exe";
 int find_pids(const char* target_name) {
     HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     if (snap == INVALID_HANDLE_VALUE) {
-        fprintf(stderr, "%sCreateToolhelp32Snapshot failed (err %lu)%s\n", red_c, GetLastError(), default_c);
+        fprintf(stderr, "%sCreateToolhelp32Snapshot failed (err %lu)%s\n", ansi.red, GetLastError(), ansi.def);
         return 0;
     }
 
@@ -37,7 +46,7 @@ int find_pids(const char* target_name) {
     pe.dwSize = sizeof(pe);
 
     if (!Process32First(snap, &pe)) {
-        fprintf(stderr, "%sProcess32First failed (err %lu)%s\n", red_c, GetLastError(), default_c);
+        fprintf(stderr, "%sProcess32First failed (err %lu)%s\n", ansi.red, GetLastError(), ansi.def);
         CloseHandle(snap);
         return 0;
     }
@@ -45,7 +54,7 @@ int find_pids(const char* target_name) {
     int found = 0;
     do {
         if (_stricmp(pe.szExeFile, target_name) == 0) {
-            printf("%sFound: %s PID: %lu%s\n", green_c, pe.szExeFile, (unsigned long)pe.th32ProcessID, default_c);
+            printf("%sFound: %s PID: %lu%s\n", ansi.green, pe.szExeFile, (unsigned long)pe.th32ProcessID, ansi.def);
             rpcs3_pid = pe.th32ProcessID;
             found++;
             break;
@@ -61,21 +70,21 @@ int main(void) {
     printf("Ratchad, made by Caleb Blackler\n\n");
 
     if (!find_pids(target)) {
-        fprintf(stderr, "%sCould not find rpcs3.exe. Make sure it's running. (err %lu)%s\n", red_c, GetLastError(), default_c);
+        fprintf(stderr, "%sCould not find rpcs3.exe. Make sure it's running. (err %lu)%s\n", ansi.red, GetLastError(), ansi.def);
         system("PAUSE");
         return 1;
     }
 
-    printf("%sAttempting to attach Ratchad to PID %lu...%s\n", yellow_c, (unsigned long)rpcs3_pid, default_c);
+    printf("%sAttempting to attach Ratchad to PID %lu...%s\n", ansi.yellow, (unsigned long)rpcs3_pid, ansi.def);
 
     HANDLE hProcess = OpenProcess(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION | PROCESS_QUERY_INFORMATION, FALSE, rpcs3_pid);
     if (!hProcess) {
-        fprintf(stderr, "%sRatchad failed to attach! (err %lu)%s\n", red_c, GetLastError(), default_c);
+        fprintf(stderr, "%sRatchad failed to attach! (err %lu)%s\n", ansi.red, GetLastError(), ansi.def);
         return 1;
     }
 
-    printf("%sRatchad successfully attached PID %lu!%s\n\n", green_c, (unsigned long)rpcs3_pid, default_c);
-    printf(clr_console);
+    printf("%sRatchad successfully attached PID %lu!%s\n\n", ansi.green, (unsigned long)rpcs3_pid, ansi.def);
+    printf(ansi.clear);
     printf("Live bolt data (200ms). Press Ctrl+C to exit.\n");
 
     while (1) {
@@ -84,14 +93,14 @@ int main(void) {
 
         // read bolts
         if (!ReadProcessMemory(hProcess, (LPCVOID)BOLTS_ADDR, &raw_bolts, sizeof(raw_bolts), &bytesRead) || bytesRead != sizeof(raw_bolts)) {
-            fprintf(stderr, "\n%sFailed reading bolts (err %lu)%s\n", red_c, GetLastError(), default_c);
+            fprintf(stderr, "\n%sFailed reading bolts (err %lu)%s\n", ansi.red, GetLastError(), ansi.def);
             Sleep(200);
             continue;
         }
 
         // read bomb glove ammo
         if (!ReadProcessMemory(hProcess, (LPCVOID)BOMB_GLOVE_ADDR, &raw_bomb, sizeof(raw_bomb), &bytesRead) || bytesRead != sizeof(raw_bomb)) {
-            fprintf(stderr, "\n%sFailed reading bomb glove ammo (err %lu)%s\n", red_c, GetLastError(), default_c);
+            fprintf(stderr, "\n%sFailed reading bomb glove ammo (err %lu)%s\n", ansi.red, GetLastError(), ansi.def);
             Sleep(200);
             continue;
         }
@@ -118,9 +127,9 @@ int main(void) {
         }
 
         printf("Raw Bolts: %s%08X%s | Actual: %s%u%s | Bolts Gained from Ammo: %s%u%s\r",
-            cyan_c, raw_bolts, default_c,
-            green_c, bolts_le, default_c,
-            yellow_c, bolts_gained, default_c);
+            ansi.cyan, raw_bolts, ansi.def,
+            ansi.green, bolts_le, ansi.def,
+            ansi.yellow, bolts_gained, ansi.def);
 
         fflush(stdout);
         Sleep(200);
