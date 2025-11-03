@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -m64
 LDFLAGS = -lws2_32
 OBJ = src/ratchad_res.o
-SRC = src/main.c src/tos.c
+SRC = src/main.c src/tos.c src/find_pids.c
 TARGET = Ratchad.exe
 
 all: $(TARGET)
