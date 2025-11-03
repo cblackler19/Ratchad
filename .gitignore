@@ -3,7 +3,6 @@
 
 # ignore windows binaries and obj files
 *.exe
-*.o
 *.obj
 
 # ignore resource compiler and icon files
