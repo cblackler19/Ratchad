@@ -11,4 +11,5 @@
 #define BOMB_GLOVE_ADDR ((uintptr_t)0x30096C0D7ULL)
 
 // misc defines
-#define TARGET "rpcs3.exe"
+#define VERSION "0.0.5"
+#define TARGET  "rpcs3.exe"
