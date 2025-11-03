@@ -1,7 +1,5 @@
 #include "../headers/tos.h"
-#include <ctype.h>
-#include <string.h>
-#include <stdio.h>
+#include "../headers/includes.h"
 
 int tos(void) {
     printf("By using Ratchad you agree to the following terms:\n\n"
